@@ -1,0 +1,194 @@
+{
+    "id": 2,
+    "gridPos": {
+      "h": 7,
+      "w": 24,
+      "x": 0,
+      "y": 2
+    },
+    "type": "table",
+    "title": "OMERO-Athena Pipeline",
+    "datasource": {
+      "uid": "wniAU_54z",
+      "type": "marcusolsson-json-datasource"
+    },
+    "pluginVersion": "9.3.2",
+    "description": "",
+    "fieldConfig": {
+      "defaults": {
+        "custom": {
+          "align": "center",
+          "displayMode": "auto",
+          "inspect": false,
+          "filterable": false
+        },
+        "mappings": [],
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            {
+              "color": "green",
+              "value": null
+            },
+            {
+              "color": "red",
+              "value": 80
+            }
+          ]
+        },
+        "color": {
+          "mode": "thresholds"
+        },
+        "unit": "percent"
+      },
+      "overrides": [
+        {
+          "matcher": {
+            "id": "byName",
+            "options": "Progress"
+          },
+          "properties": [
+            {
+              "id": "custom.displayMode",
+              "value": "basic"
+            },
+            {
+              "id": "unit",
+              "value": "percent"
+            },
+            {
+              "id": "color",
+              "value": {
+                "mode": "continuous-RdYlGr"
+              }
+            }
+          ]
+        },
+        {
+          "matcher": {
+            "id": "byName",
+            "options": "Time Elapsed"
+          },
+          "properties": [
+            {
+              "id": "noValue",
+              "value": "0:00:00"
+            }
+          ]
+        },
+        {
+          "matcher": {
+            "id": "byName",
+            "options": "Time Remaining"
+          },
+          "properties": [
+            {
+              "id": "noValue",
+              "value": "?"
+            },
+            {
+              "id": "custom.width",
+              "value": null
+            }
+          ]
+        },
+        {
+          "matcher": {
+            "id": "byName",
+            "options": "Current Plane"
+          },
+          "properties": [
+            {
+              "id": "noValue",
+              "value": "[0/0]"
+            }
+          ]
+        },
+        {
+          "matcher": {
+            "id": "byName",
+            "options": "Progress"
+          },
+          "properties": [
+            {
+              "id": "noValue",
+              "value": "0%"
+            }
+          ]
+        }
+      ]
+    },
+    "options": {
+      "showHeader": true,
+      "footer": {
+        "show": false,
+        "reducer": [
+          "sum"
+        ],
+        "fields": ""
+      },
+      "frameIndex": 1,
+      "sortBy": []
+    },
+    "targets": [
+      {
+        "cacheDurationSeconds": 5,
+        "fields": [
+          {
+            "jsonPath": "$.pipeline_running_threads[*].name",
+            "language": "jsonpath",
+            "name": "Name"
+          },
+          {
+            "jsonPath": "$.pipeline_running_threads[*].time_elapsed",
+            "language": "jsonpath",
+            "name": "Time Elapsed"
+          },
+          {
+            "jsonPath": "$.pipeline_running_threads[*].estimated_time_remaining",
+            "language": "jsonpath",
+            "name": "Time Remaining"
+          },
+          {
+            "jsonPath": "$.pipeline_running_threads[*].current_plane",
+            "language": "jsonpath",
+            "name": "Current Plane"
+          },
+          {
+            "jsonPath": "$.pipeline_running_threads[*].percent_done",
+            "language": "jsonpath",
+            "name": "Progress",
+            "type": "number"
+          }
+        ],
+        "method": "GET",
+        "params": [],
+        "queryParams": "",
+        "queryType": "randomWalk",
+        "refId": "Processing",
+        "urlPath": "",
+        "datasource": {
+          "uid": "wniAU_54z",
+          "type": "marcusolsson-json-datasource"
+        }
+      },
+      {
+        "cacheDurationSeconds": 300,
+        "fields": [
+          {
+            "jsonPath": "$.pipeline_queued_images[*].name",
+            "name": "Name"
+          }
+        ],
+        "hide": false,
+        "method": "GET",
+        "queryParams": "",
+        "refId": "Queue",
+        "urlPath": "",
+        "datasource": {
+          "uid": "wniAU_54z",
+          "type": "marcusolsson-json-datasource"
+        }
+      }
+    ]
+  }
