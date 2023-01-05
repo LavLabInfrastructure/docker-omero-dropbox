@@ -1,6 +1,11 @@
 FROM ghcr.io/lhns/prometheus-bash-exporter:6fa8c9ed as exporter
 FROM eclipse-temurin:11
 ARG DEBIAN_FRONTEND=noninteractive
+ENV SCRIPT_METRICS=/docker/prometheus.sh
+ENV SERVER_PORT=19090
+LABEL prometheus-scrape.enabled=true
+LABEL prometheus-scrape.job_name=docker-omero-dropbox
+LABEL prometheus-scrape.port=${SERVER_PORT}
 
 #install runtime libraries
 RUN apt-get update \
@@ -34,9 +39,8 @@ RUN cd / && curl -L -o bf2raw.zip https://github.com/glencoesoftware/bioformats2
     cp -r /tmp/bioformats2raw*/* /docker
 
 COPY --from=exporter prometheus-bash-exporter /docker/
-COPY pipe/* .env /docker/
-COPY grafana /etc/grafana/panels
-COPY rules /etc/prometheus/rules
+COPY pipe/* /docker/
+COPY configs /configs
 
 RUN rm -rf /tmp
 

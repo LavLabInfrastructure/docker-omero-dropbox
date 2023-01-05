@@ -2,21 +2,6 @@
 # starts watching each directory of /in/ 
 set -e
 
-##### TODO: #####
-##### DONE #####
-# scraper DONE
-# multithreading DONE
-# continue imports DONE
-# priorty imports DONE
-# only care about important directories DONE
-# email on failure DONE
-
-
-# start microserver
-# Writes data from IN_PORT to file and returns that info on OUT_PORT
-# should allow multiple writers, a single process manager, multiple processes, and continuing after reboot
-# this is awfully hacky but if it works whatever ig
-
 # starts an input server
 input(){
     # find open port in private range (49152-65535) 
@@ -69,13 +54,6 @@ output(){
             sed -i '1d' $QUEUE_FILE
         fi
         echo $line | nc -l $OUT_PORT
-        
-        # on request, send item through OUT_PORT then remove it from queue if we have one otherwise sent 'wait' # | nc -l $OUT_PORT
-        # read -r line < $QUEUE_FILE
-        # [[ -z $line ]] && continue
-        # echo $line > /dev/tcp/localhost/$OUT_PORT
-        # tail -n +2 "$QUEUE_FILE" > "$QUEUE_FILE.tmp" && \
-        #     mv "$QUEUE_FILE.tmp" "$QUEUE_FILE"
     done & 
 }
 
@@ -115,10 +93,12 @@ for d in */; do
     /docker/watchDir.sh ${d%/} &
 done
 
-# grafana datasource
-[[ $ENABLE_GRAFANA ]] && socat -U TCP-LISTEN:13000,fork EXEC:'/docker/grafana.sh',stderr,pty,echo=0 &
+# export grafana datasource and start exporter
+[[ $ENABLE_GRAFANA ]] && \
+    cp -r /configs/grafana/*/ /grafana && \
+    socat -U TCP-LISTEN:13000,fork EXEC:'/docker/grafana.sh',stderr,pty,echo=0 &
 
-# prometheus exporter
+# start prometheus exporter (discovered by prometheus-docker-sd)
 [[ $ENABLE_PROMETHEUS ]] && /docker/prometheus-bash-exporter &
 
 # Good Job!
