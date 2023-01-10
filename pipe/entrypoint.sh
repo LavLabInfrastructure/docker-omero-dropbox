@@ -98,7 +98,7 @@ done
 # export grafana datasource and start exporter
 [[ $ENABLE_GRAFANA ]] && \
     echo "starting grafana" && \
-    cp -r /configs/grafana/*/ /grafana && \
+    cp -r /configs/grafana/*/ /etc/grafana/provisioning && \
     socat -U TCP-LISTEN:13000,fork EXEC:'/docker/grafana.sh',stderr,pty,echo=0 &
 
 # start prometheus exporter (discovered by prometheus-docker-sd)
