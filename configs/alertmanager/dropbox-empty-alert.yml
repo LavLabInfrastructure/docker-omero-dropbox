@@ -1,9 +1,10 @@
 groups:
-- name: example
+- name: ImageQueueAlert
   rules:
   - alert: No Images Processing
     annotations:
       description: "Pipeline Is Empty!"
     expr: pipeline_processing_count == 0
+    for: 6h
     labels:
       severity: warning
