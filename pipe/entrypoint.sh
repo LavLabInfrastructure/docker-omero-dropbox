@@ -60,8 +60,8 @@ output(){
 # source and export environment
 set -a
 echo "Starting..."
-[[ -f /docker/.env ]] && \
-    . /docker/.env
+[[ -f /.env ]] && \
+    . /.env
 set +a
 
 # create queue file
@@ -97,11 +97,12 @@ done
 
 # export grafana datasource and start exporter
 [[ $ENABLE_GRAFANA ]] && \
+    echo "starting grafana" && \
     cp -r /configs/grafana/*/ /grafana && \
     socat -U TCP-LISTEN:13000,fork EXEC:'/docker/grafana.sh',stderr,pty,echo=0 &
 
 # start prometheus exporter (discovered by prometheus-docker-sd)
-[[ $ENABLE_PROMETHEUS ]] && /docker/prometheus-bash-exporter &
+[[ $ENABLE_PROMETHEUS ]] && echo "starting prometheus" && /docker/prometheus-bash-exporter &
 
 # Good Job!
 /docker/log.sh INFO "Finished establishing all watches"
