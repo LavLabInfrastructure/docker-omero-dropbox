@@ -59,6 +59,7 @@ output(){
 
 # source and export environment
 set -a
+echo "Starting..."
 [[ ! -z /docker/.env ]] && \
     . /docker/.env
 set +a
