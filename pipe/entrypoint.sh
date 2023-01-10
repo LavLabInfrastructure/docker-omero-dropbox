@@ -59,7 +59,8 @@ output(){
 
 # source and export environment
 set -a
-. /docker/.env
+[[ ! -z /docker/.env ]] && \
+    . /docker/.env
 set +a
 
 # create queue file
