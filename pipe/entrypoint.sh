@@ -60,7 +60,7 @@ output(){
 # source and export environment
 set -a
 echo "Starting..."
-[[ ! -z /docker/.env ]] && \
+[[ -f /docker/.env ]] && \
     . /docker/.env
 set +a
 
