@@ -1,4 +1,3 @@
-
 datasources:
   # <string, required> Sets the name you use to refer to
   # the data source in panels and queries.
