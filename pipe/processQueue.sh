@@ -3,7 +3,7 @@
 [[ -z $OUT_PORT ]] && echo "MISSING OUT_PORT, SOMETHING WENT WRONG" && exit 1
 [[ -z $REQ_PORT ]] && echo "MISSING REQ_PORT, SOMETHING WENT WRONG" && exit 1
 [[ -z $MAX_THREADS ]] && echo "MISSING MAX_THREADS, SOMETHING WENT WRONG" && exit 1
-MAX_THREADS=12
+
 while true
 do  
     # While no output, request output (no output likely means server is not up yet) 
