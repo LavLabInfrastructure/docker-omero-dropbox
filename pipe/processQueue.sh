@@ -20,5 +20,5 @@ do
 
     # if we have reached thread count do not ask for more until one has finished
     background=( $(jobs -p) )
-    [[ ${#background[@]} == $MAX_THREADS ]] && wait -n 
+    [[ ${#background[@]} -ge $MAX_THREADS ]] && wait -n 
 done
