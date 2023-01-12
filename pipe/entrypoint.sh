@@ -1,6 +1,14 @@
 #!/docker/dumb-init /bin/bash
 # starts watching each directory of /in/ 
 set -e
+propegate(){
+    /docker/log.sh INFO "QUITTING ENTRYPOINT"
+    jobs -p | while read pid
+    do
+        kill $pid
+    done
+    wait
+}
 
 # starts an input server
 input(){
@@ -56,7 +64,7 @@ output(){
         echo $line | nc -l $OUT_PORT
     done & 
 }
-
+trap propegate SIGINT SIGTERM
 # source and export environment
 set -a
 echo "Starting..."
@@ -89,24 +97,24 @@ mkdir -p /tmp/PROCESSING
 input 
 output 
 
-# start processor
-/docker/processQueue.sh &
 
 # watch each subdirectory of /in
 cd /in
 for d in */; do
     /docker/watchDir.sh ${d%/} &
 done
+/docker/log.sh INFO "Finished establishing all watches"
 
 # export grafana datasource and start exporter
-[[ $ENABLE_GRAFANA ]] && \
+# [[ $ENABLE_GRAFANA ]] && \
     echo "starting grafana" && \
     cp -r /configs/grafana/*/ /etc/grafana/provisioning && \
     socat -U TCP-LISTEN:13000,fork EXEC:'/docker/grafana.sh',stderr,pty,echo=0 &
 
 # start prometheus exporter (discovered by prometheus-docker-sd)
-[[ $ENABLE_PROMETHEUS ]] && echo "starting prometheus" && /docker/prometheus-bash-exporter &
+# [[ $ENABLE_PROMETHEUS ]] && \
+    echo "starting prometheus" && /docker/prometheus-bash-exporter &
 
-# Good Job!
-/docker/log.sh INFO "Finished establishing all watches"
-wait
+# start processor
+exec /docker/processQueue.sh
+

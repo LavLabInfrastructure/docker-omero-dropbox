@@ -60,35 +60,3 @@ echo "HTTP/1.1 200 OK
 Content-Type: text/json 
 
 $JSON_STRING"
-# echo 'HTTP/1.1 200 OK
-# Content-Type: text/json 
-
-# {
-#   "pipeline_maximum_threads": "4",
-#   "pipeline_running_threads": [
-#     {
-#       "name": "CMU-1.tiff",
-#       "current_plane": "\r[0/0]",
-#       "percent_done": "97%",
-#       "time_elapsed": "0:00:08",
-#       "estimated_time_remaining": "0:01:36"
-#     },
-#     {
-#       "name": "CMU-2.tiff",
-#       "current_plane": "\r[0/0]",
-#       "percent_done": "5%",
-#       "time_elapsed": "0:00:08",
-#       "estimated_time_remaining": "0:02:27"
-#     },
-#     {
-#       "name": "CMU-3.tiff",
-#       "current_plane": "\r[0/0]",
-#       "percent_done": "3%",
-#       "time_elapsed": "0:00:08",
-#       "estimated_time_remaining": "0:03:15"
-#     }
-#   ],
-#   "pipeline_converted_filetype": "ome.tiff",
-#   "pipeline_zarr_args": " --max_workers 1 --series 0 --compression raw",
-#   "pipeline_ometiff_args": " --max_workers 1 --rgb --compression JPEG --quality 90"
-# }'

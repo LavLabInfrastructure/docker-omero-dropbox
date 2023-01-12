@@ -7,6 +7,7 @@
 regex=$(echo '.*\.tif$|.*\.tiff$|.*\.svs$|.*\.jpg$|.*\.vsi$' | sed 's/|/\\|/g')
 find /in/$1 -iregex $regex | while read file
 do
+	/docker/log.sh INFO "$file was found in watch directory on startup, adding to queue..."
 	[[ ! -z $file ]] && echo $file $1 > /dev/tcp/localhost/$IN_PORT 
 done
 
