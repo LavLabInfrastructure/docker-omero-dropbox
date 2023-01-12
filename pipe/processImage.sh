@@ -69,7 +69,7 @@ main(){
     fi
 
     #zip and archive (medusa?siren? wherever rsync goes now.)
-    [[ $ARCHIVE_ORIGINAL ]] && /docker/archiveWSI.sh $currentImg ${2%/} $parentPath
+    # [[ $ARCHIVE_ORIGINAL ]] && /docker/archiveWSI.sh $currentImg ${2%/} $parentPath
 
     #these files are huge, cannot afford to keep them kicking around
     /docker/log.sh INFO "cleaning workdir"
