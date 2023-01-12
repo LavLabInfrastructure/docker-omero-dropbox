@@ -60,12 +60,11 @@ output(){
 # source and export environment
 set -a
 echo "Starting..."
-[[ -f /configs/*.env ]] && \
-    for file in /configs/*.env
-    do
-        [[ $f == /configs/sample.env ]] && continue
-        . $f
-    done
+for file in /configs/*.env
+do
+    [[ $file == /configs/sample.env ]] && continue
+    . $file
+done
 set +a
 
 # create queue file
