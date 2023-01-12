@@ -73,7 +73,7 @@ set +a
 
 
 # if logdir is not defined, define it
-[[ -z $LOG_DIR ]] && export LOG_DIR=/out/log 
+[[ -z $LOG_DIR ]] && export LOG_DIR=/log 
 mkdir -p $LOG_DIR 
 
 [[ -z $WSI_EXTENSIONS ]] && export WSI_EXTENSIONS='.*\.tif$|.*\.tiff$|.*\.svs$|.*\.jpg$|.*\.vsi$'
