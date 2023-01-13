@@ -4,7 +4,7 @@ datasources:
   # the data source in panels and queries.
   - name: docker-omero-dropbox
     # <string, required> Sets the data source type.
-    type: json
+    type: marcusolsson-json-datasource
     # <string, required> Sets the access mode, either
     # proxy or direct (Server or Browser in the UI).
     # Some data sources are incompatible with any setting
