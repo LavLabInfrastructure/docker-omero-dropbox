@@ -17,11 +17,54 @@ propegate(){
     wait
 }
 
+parseStdout(){
+    local stdout=$1
+    local jsonPath=$workdir/json
+
+    jq -cn \
+        --arg name "$filename" \
+        --arg current_plane "[0/0]" \
+        --arg percent_done "0%" \
+        --arg time_elapsed "0:00:00" \
+        --arg estimated_time_remaining "?" \
+        '$ARGS.named' > $jsonPath
+    
+    cat $stdout > /dev/null &
+    while true 
+    do
+        sleep 1
+        # get latest line (progress bar does not print new line
+        #       so this is some trickery to get a line instantly)
+        line=$( (timeout 3 cat $stdout; exit 0) | tail -1 )
+        # alphabet means an unimportant line
+        if [[ ! "$line" =~ ^[A-Za-z]+  ]] && [[ ! -z $line ]]; then
+            # scrape line
+            plane=$(echo $line | awk '{print $1}')
+            percent=$(echo $line | awk '{print $2}')
+            timer=$(echo $line | awk -F "[ ]*[(/)]+[ ]*" '{print $4}')
+            timeLeft=$(echo $line | awk -F "[ ]*[(/)]+[ ]*" '{print $5}')
+            
+            # get current values
+            jsonPlane=$(jq '.current_plane' $jsonPath)
+            jsonPercent=$(jq '.percent_done' $jsonPath)
+            jsonTimer=$(jq '.time_elapsed' $jsonPath)
+            jsonTimeLeft=$(jq '.estimated_time_remaining' $jsonPath)
+
+            jq -cn \
+            --arg name "$filename" \
+            --arg current_plane "${plane}" \
+            --arg percent_done "$percent" \
+            --arg time_elapsed "$timer" \
+            --arg estimated_time_remaining "$timeLeft" \
+            '$ARGS.named' > $jsonPath
+        fi
+    done
+}
+
 main(){    
     #gather title info
     filename=${1##*/}
     parentPath=${1%/*}
-    # echo $(echo $parentPath | sed "s/\/in\/$2\///g")
     local datasetPath=$(echo $parentPath | sed "s/\/in\/$2\///g")
     local dataset=${datasetPath%%/*}
     local threads=${BASE_THREADS:-1}
@@ -43,13 +86,13 @@ main(){
     mkdir -p $workdir
     mv $1 $workdir/$filename
     
-    # stdout for scraper
+    # stdout scraper
     local stdout=$workdir/out
     mkfifo $stdout
-    
+    parseStdout $stdout &
+    local parserPid=$!
     #convert to zarr
     if [[ $CONVERT_TO_ZARR ]]; then
-        cat $stdout > /dev/null &
         /docker/log.sh INFO "converting to zarr"
         /docker/bin/bioformats2raw -p --max_workers=$threads "$currentImg" "/out/$2/$dataset/${filename%.*}/" $BF2RAW_ARGS >$stdout 2>&1 
         /docker/log.sh INFO "converted to zarr"
@@ -59,14 +102,13 @@ main(){
     if [[ $CONVERT_TO_TIFF ]]; then 
         /docker/log.sh INFO "converting to ome.tiff"
         mkdir -p "/out/$2/$dataset" 
-
-        cat $stdout > /dev/null &
         /docker/bin/bioformats2raw -p --max_workers=$threads "$currentImg" "$workdir/zarr" $BF2RAW_ARGS >$stdout 2>&1 || exit
         /docker/log.sh INFO "converted to zarr"
-        cat $stdout > /dev/null &
+
         /docker/bin/raw2ometiff -p --max_workers=$threads "$workdir/zarr" "/out/$2/$dataset/${filename%.*}.ome.tiff" $RAW2TIFF_ARGS >$stdout 2>&1 
         /docker/log.sh INFO "converted to ome.tiff" 
     fi
+    kill $parserPid
 
     #zip and archive (medusa?siren? wherever rsync goes now.)
     # [[ $ARCHIVE_ORIGINAL ]] && /docker/archiveWSI.sh $currentImg ${2%/} $parentPath
@@ -79,3 +121,4 @@ main(){
 [[ -z $1 ]] && /docker/log.sh ERROR "No file provided" && exit 1
 trap propegate SIGINT SIGTERM
 main $@
+exit 0

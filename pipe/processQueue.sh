@@ -4,7 +4,6 @@ propegate(){
     /docker/log.sh INFO "QUITTING QUEUE"
     jobs -p | while read pid
     do
-        /docker/log.sh INFO $pid
         kill $pid
     done
     wait
@@ -26,12 +25,11 @@ do
         sleep 1 
     done
     # "wait" means there are no items to process, sleep then try again
-    [[ $a == "wait" ]] && echo "waiting..." && sleep 5 && continue
+    [[ $a == "wait" ]] && /docker/log.sh INFO "waiting..." && sleep 60 && continue
 
     # start a thread
     /docker/processImage.sh "$a" "$b" &
-
     # if we have reached thread count do not ask for more until one has finished
     background=( $(jobs -p) )
-    [[ ${#background[@]} -ge $MAX_THREADS ]] && wait -n 
+    [[ ${#background[@]} -ge $MAX_THREADS ]] && echo ${background[*]} $MAX_THREADS && wait -n 
 done

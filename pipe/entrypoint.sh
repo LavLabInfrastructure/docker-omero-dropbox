@@ -29,7 +29,7 @@ input(){
         # if priority import, prepend, else, append
         [[ "${a##*/}" =~ "PRIORITY_" ]] &&
             echo -e "$a $b\n$(cat $QUEUE_FILE)" > $QUEUE_FILE ||
-            echo "$a" "$b" >> $QUEUE_FILE 
+            echo "$a" "$b" >> $QUEUE_FILE
         /docker/log.sh INFO "Added to Queue: $a"
     done &
 }
@@ -64,6 +64,31 @@ output(){
         echo $line | nc -l $OUT_PORT
     done & 
 }
+
+# provides grafana configs and prepares grafana json datasource endpoint
+initGrafana(){
+    echo "starting grafana"
+    export GRAFANA_STATIC=/tmp/static.json
+    # add configs to volume
+    cp -r /configs/grafana/*/ /etc/grafana/provisioning  
+
+    # conversion type
+    filetype="ome.tiff"
+    [[ ! -z $CONVERT_TO_ZARR ]] && filetype="ome.zarr"
+
+    # get queue
+    # queue=$(jq -Rs 'split("\n")|map(split(" ")|{name:.[0]}?)' <$QUEUE_FILE)
+
+    # form static json data
+    jq -n \
+        --arg maximum_threads "$MAX_THREADS" \
+        --arg converted_filetype "$filetype" \
+        --arg zarr_args "$BF2RAW_ARGS" \
+        --arg ometiff_args "$RAW2TIFF_ARGS" \
+        '$ARGS.named' > $GRAFANA_STATIC
+
+    socat -U TCP-LISTEN:13000,fork EXEC:'/docker/grafana.sh',stderr,pty,echo=0 &
+}
 trap propegate SIGINT SIGTERM
 # source and export environment
 set -a
@@ -76,8 +101,8 @@ done
 set +a
 
 # create queue file
-[[ -z $QUEUE_FILE ]] && export QUEUE_FILE="/in/.queue" 
-[[ ! -f $QUEUE_FILE ]] && touch $QUEUE_FILE
+export QUEUE_FILE="/tmp/.queue" 
+mkdir /tmp && touch $QUEUE_FILE
 
 
 # if logdir is not defined, define it
@@ -106,13 +131,12 @@ done
 /docker/log.sh INFO "Finished establishing all watches"
 
 # export grafana datasource and start exporter
-# [[ $ENABLE_GRAFANA ]] && \
-    echo "starting grafana" && \
-    cp -r /configs/grafana/*/ /etc/grafana/provisioning && \
-    socat -U TCP-LISTEN:13000,fork EXEC:'/docker/grafana.sh',stderr,pty,echo=0 &
-
+ENABLE_GRAFANA=true
+[[ $ENABLE_GRAFANA ]] && initGrafana
+    
 # start prometheus exporter (discovered by prometheus-docker-sd)
-# [[ $ENABLE_PROMETHEUS ]] && \
+ENABLE_PROMETHEUS=true
+[[ $ENABLE_PROMETHEUS ]] && \
     echo "starting prometheus" && /docker/prometheus-bash-exporter &
 
 # start processor
