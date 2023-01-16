@@ -5,16 +5,9 @@ cleanup(){
     if [[ -d $workdir ]];then
         /docker/log.sh INFO "$filename failed processing! Returning to original directory..."
         mv $workdir/$filename $parentPath/$filename
-        rm -rf $workdir
+        rm -rf $workdir/*
+        rmdir $workdir
     fi
-}
-
-propegate(){
-    jobs -p | while read pid
-    do
-        kill $pid
-    done
-    wait
 }
 
 parseStdout(){
@@ -28,14 +21,13 @@ parseStdout(){
         --arg time_elapsed "0:00:00" \
         --arg estimated_time_remaining "?" \
         '$ARGS.named' > $jsonPath
-    
-    cat $stdout > /dev/null &
-    while true 
+    while [[ -d $workdir ]] 
     do
-        sleep 1
+        sleep 2
         # get latest line (progress bar does not print new line
         #       so this is some trickery to get a line instantly)
-        line=$( (timeout 3 cat $stdout; exit 0) | tail -1 )
+        [[ ! -p $stdout ]] && exit
+        line=$( (timeout 3 cat $stdout; exit 0) | tail -1 ) 2> /dev/null
         # alphabet means an unimportant line
         if [[ ! "$line" =~ ^[A-Za-z]+  ]] && [[ ! -z $line ]]; then
             # scrape line
@@ -44,12 +36,19 @@ parseStdout(){
             timer=$(echo $line | awk -F "[ ]*[(/)]+[ ]*" '{print $4}')
             timeLeft=$(echo $line | awk -F "[ ]*[(/)]+[ ]*" '{print $5}')
             
-            # get current values
-            jsonPlane=$(jq '.current_plane' $jsonPath)
-            jsonPercent=$(jq '.percent_done' $jsonPath)
-            jsonTimer=$(jq '.time_elapsed' $jsonPath)
-            jsonTimeLeft=$(jq '.estimated_time_remaining' $jsonPath)
+            # # get current values
+            # jsonPlane="jq .current_plane $jsonPath"
+            # jsonPercent="jq .percent_done $jsonPath"
+            # jsonTimer="jq .time_elapsed $jsonPath"
+            # jsonTimeLeft="jq .estimated_time_remaining $jsonPath"
 
+            # for var in "jsonPlane" "jsonPercent" "jsonTimer" "jsonTimeLeft"
+            # do
+            #     [[ ! -f $jsonPath ]] && echo "stopping parser HERE" && exit
+            #     ${!var} | read $var
+            # done
+
+            [[ ! -f $jsonPath ]] && exit
             jq -cn \
             --arg name "$filename" \
             --arg current_plane "${plane}" \
@@ -82,7 +81,7 @@ main(){
     #mv to tmp directory (to avoid multiple calls on same file) 
     [[ -d $workdir ]] && /docker/log.sh ERROR "Work directory for $filename is already occupied!" && exit 1
     /docker/log.sh INFO "PROCESSING $filename"
-    trap cleanup EXIT
+    trap cleanup EXIT SIGINT SIGTERM
     mkdir -p $workdir
     mv $1 $workdir/$filename
     
@@ -90,7 +89,7 @@ main(){
     local stdout=$workdir/out
     mkfifo $stdout
     parseStdout $stdout &
-    local parserPid=$!
+
     #convert to zarr
     if [[ $CONVERT_TO_ZARR ]]; then
         /docker/log.sh INFO "converting to zarr"
@@ -108,17 +107,16 @@ main(){
         /docker/bin/raw2ometiff -p --max_workers=$threads "$workdir/zarr" "/out/$2/$dataset/${filename%.*}.ome.tiff" $RAW2TIFF_ARGS >$stdout 2>&1 
         /docker/log.sh INFO "converted to ome.tiff" 
     fi
-    kill $parserPid
-
     #zip and archive (medusa?siren? wherever rsync goes now.)
     # [[ $ARCHIVE_ORIGINAL ]] && /docker/archiveWSI.sh $currentImg ${2%/} $parentPath
 
     #these files are huge, cannot afford to keep them kicking around
     /docker/log.sh INFO "cleaning workdir"
-    rm -rf $workdir
+    ls -la $workdir > /dev/null # i cannot comprehend why but this is REQUIRED to delete properly
+    rm -rf $workdir/* 
+    rmdir $workdir
 }
 
 [[ -z $1 ]] && /docker/log.sh ERROR "No file provided" && exit 1
-trap propegate SIGINT SIGTERM
 main $@
 exit 0

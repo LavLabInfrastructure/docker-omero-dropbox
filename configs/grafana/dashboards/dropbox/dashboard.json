@@ -1,0 +1,264 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [],
+            "type": "dashboard"
+          },
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 1,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+      {
+        "gridPos": {
+          "h": 9,
+          "w": 15,
+          "x": 0,
+          "y": 0
+        },
+        "id": 2,
+        "libraryPanel": {
+          "name": "OMERO-Dropbox-Processing",
+          "uid": "jbsQta24k"
+        },
+        "title": "Processing"
+      },
+      {
+        "datasource": {
+          "type": "marcusolsson-json-datasource",
+          "uid": "mxHac-h4z"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "center",
+              "displayMode": "json-view",
+              "filterable": false,
+              "inspect": false
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "B pipeline_static_configs"
+              },
+              "properties": [
+                {
+                  "id": "custom.displayMode",
+                  "value": "json-view"
+                },
+                {
+                  "id": "mappings",
+                  "value": []
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "maximum_threads"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 160
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "converted_filetype"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 142
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "zarr_args"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 281
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Max Threads"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 103
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Filetype"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 116
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "zarr args"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 295
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 3,
+          "w": 9,
+          "x": 15,
+          "y": 0
+        },
+        "id": 4,
+        "options": {
+          "footer": {
+            "fields": "",
+            "reducer": [
+              "sum"
+            ],
+            "show": false
+          },
+          "frameIndex": 0,
+          "showHeader": true,
+          "sortBy": []
+        },
+        "pluginVersion": "9.3.2",
+        "targets": [
+          {
+            "body": "",
+            "cacheDurationSeconds": 300,
+            "datasource": {
+              "type": "marcusolsson-json-datasource",
+              "uid": "mxHac-h4z"
+            },
+            "fields": [
+              {
+                "jsonPath": "$.pipeline_static_configs.maximum_threads",
+                "name": "Max Threads"
+              },
+              {
+                "jsonPath": "$.pipeline_static_configs.converted_filetype",
+                "language": "jsonpath",
+                "name": "Filetype"
+              },
+              {
+                "jsonPath": "$.pipeline_static_configs.zarr_args",
+                "language": "jsonpath",
+                "name": "zarr args"
+              },
+              {
+                "jsonPath": "$.pipeline_static_configs.ometiff_args",
+                "language": "jsonpath",
+                "name": "ometiff args"
+              }
+            ],
+            "method": "GET",
+            "queryParams": "",
+            "refId": "A",
+            "urlPath": ""
+          }
+        ],
+        "title": "Dropbox Configuration",
+        "transformations": [],
+        "type": "table"
+      },
+      {
+        "gridPos": {
+          "h": 6,
+          "w": 9,
+          "x": 15,
+          "y": 3
+        },
+        "id": 6,
+        "libraryPanel": {
+          "name": "Queue",
+          "uid": "T3ls8sh4z"
+        },
+        "title": "Queue"
+      }
+    ],
+    "refresh": "10s",
+    "schemaVersion": 37,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": [
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m"
+      ]
+    },
+    "timezone": "",
+    "title": "OMERO Dropbox Monitoring",
+    "uid": "IrEbca24k",
+    "version": 9,
+    "weekStart": ""
+  }

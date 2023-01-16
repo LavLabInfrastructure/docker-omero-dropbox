@@ -76,9 +76,6 @@ initGrafana(){
     filetype="ome.tiff"
     [[ ! -z $CONVERT_TO_ZARR ]] && filetype="ome.zarr"
 
-    # get queue
-    # queue=$(jq -Rs 'split("\n")|map(split(" ")|{name:.[0]}?)' <$QUEUE_FILE)
-
     # form static json data
     jq -n \
         --arg maximum_threads "$MAX_THREADS" \
@@ -89,7 +86,7 @@ initGrafana(){
 
     socat -U TCP-LISTEN:13000,fork EXEC:'/docker/grafana.sh',stderr,pty,echo=0 &
 }
-trap propegate SIGINT SIGTERM
+trap propegate SIGINT SIGTERM EXIT
 # source and export environment
 set -a
 echo "Starting..."

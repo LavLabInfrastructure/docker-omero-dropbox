@@ -17,7 +17,10 @@ propegate(){
 trap propegate SIGINT SIGTERM
 while true
 do  
-    
+    # if we have reached thread count do not ask for more until one has finished
+    background=( $(jobs -p) )
+    [[ ${#background[@]} -ge $MAX_THREADS ]] && wait -n && continue
+
     # While no output, request output (no output likely means server is not up yet) 
     while ! { read a b < /dev/tcp/localhost/$OUT_PORT; } 2>/dev/null
     do
@@ -25,11 +28,8 @@ do
         sleep 1 
     done
     # "wait" means there are no items to process, sleep then try again
-    [[ $a == "wait" ]] && /docker/log.sh INFO "waiting..." && sleep 60 && continue
+    [[ $a == "wait" ]] && sleep 60 && continue
 
     # start a thread
     /docker/processImage.sh "$a" "$b" &
-    # if we have reached thread count do not ask for more until one has finished
-    background=( $(jobs -p) )
-    [[ ${#background[@]} -ge $MAX_THREADS ]] && echo ${background[*]} $MAX_THREADS && wait -n 
 done
