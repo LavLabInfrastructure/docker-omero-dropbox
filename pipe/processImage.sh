@@ -3,10 +3,10 @@
 set -e
 cleanup(){
     if [[ -d $workdir ]];then
-        /docker/log.sh INFO "$filename failed processing! Returning to original directory..."
-        mv $workdir/$filename $parentPath/$filename
-        rm -rf $workdir/*
-        rmdir $workdir
+        /docker/log.sh INFO "$filename failed processing! Sending to failed directory..."
+        mkdir -p /fail$parentPath
+        [[ -f $workdir/$filename ]] && mv $workdir/$filename /fail$parentPath/$filename
+        rm -rf $workdir
     fi
 }
 
@@ -112,9 +112,7 @@ main(){
 
     #these files are huge, cannot afford to keep them kicking around
     /docker/log.sh INFO "cleaning workdir"
-    ls -la $workdir > /dev/null # i cannot comprehend why but this is REQUIRED to delete properly
-    rm -rf $workdir/* 
-    rmdir $workdir
+    rm -rf $workdir
 }
 
 [[ -z $1 ]] && /docker/log.sh ERROR "No file provided" && exit 1
