@@ -99,10 +99,10 @@ set +a
 
 # create queue file
 export QUEUE_FILE="/tmp/.queue" 
-mkdir /tmp && touch $QUEUE_FILE
+mkdir -p /tmp && touch $QUEUE_FILE
 
 
-# if logdir is not defined, define it
+# define required variables
 [[ -z $LOG_DIR ]] && export LOG_DIR=/log 
 mkdir -p $LOG_DIR 
 
@@ -112,17 +112,32 @@ mkdir -p $LOG_DIR
 [[ -z $CONVERT_TO_TIFF ]] && [[ -z $CONVERT_TO_ZARR ]] &&
     CONVERT_TO_TIFF=true
 
-# tmp folder 
-mkdir -p /tmp/PROCESSING
+
+# processing folders
+mkdir -p /tmp/PROCESSING /in/.PROCESSING
+
+# resume conversions
+regex=$(echo '.*\.tif$|.*\.tiff$|.*\.svs$|.*\.jpg$|.*\.vsi$' | sed 's/|/\\|/g')
+find /in/.PROCESSING -iregex $regex | while read file
+    do
+        /docker/log.sh INFO "$file was found in watch directory on startup, adding to queue..."
+        [[ ! -z $file ]] && echo $file ${d%/} > /dev/tcp/localhost/$IN_PORT 
+    done
 
 # start microserver
 input 
 output 
 
 
-# watch each subdirectory of /in
+# watch each subdirectory of /in, besides the processing folder
 cd /in
 for d in */; do
+    # queue existing files that will be missed by watchfs 
+    find /in/${d%/} -iregex $regex | while read file
+    do
+        /docker/log.sh INFO "$file was found in watch directory on startup, adding to queue..."
+        [[ ! -z $file ]] && echo $file ${d%/} > /dev/tcp/localhost/$IN_PORT 
+    done
     /docker/watchDir.sh ${d%/} &
 done
 /docker/log.sh INFO "Finished establishing all watches"

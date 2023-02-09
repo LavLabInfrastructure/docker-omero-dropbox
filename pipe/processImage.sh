@@ -3,9 +3,7 @@
 set -e
 cleanup(){
     if [[ -d $workdir ]];then
-        /docker/log.sh INFO "$filename failed processing! Sending to failed directory..."
-        mkdir -p /fail$parentPath
-        [[ -f $workdir/$filename ]] && mv $workdir/$filename /fail$parentPath/$filename
+        /docker/log.sh ERROR "$filename failed processing! Leaving file at $currentImg This image will be attempted again at startup."
         rm -rf $workdir
     fi
 }
@@ -76,14 +74,14 @@ main(){
         threads=${PRIORITY_THREADS:-2} 
 
     workdir=/tmp/PROCESSING/$filename.d
-    local currentImg=$workdir/$filename
+    currentImg=/in/.PROCESSING/$filename
 
     #mv to tmp directory (to avoid multiple calls on same file) 
     [[ -d $workdir ]] && /docker/log.sh ERROR "Work directory for $filename is already occupied!" && exit 1
     /docker/log.sh INFO "PROCESSING $filename"
     trap cleanup EXIT SIGINT SIGTERM
     mkdir -p $workdir
-    mv $1 $workdir/$filename
+    mv $1 $currentImg
     
     # stdout scraper
     local stdout=$workdir/out
@@ -104,7 +102,7 @@ main(){
         /docker/bin/bioformats2raw -p --max_workers=$threads "$currentImg" "$workdir/zarr" $BF2RAW_ARGS >$stdout 2>&1 || exit
         /docker/log.sh INFO "converted to zarr"
 
-        /docker/bin/raw2ometiff -p --max_workers=$threads "$workdir/zarr" "/out/$2/$dataset/${filename%.*}.ome.tiff" $RAW2TIFF_ARGS >$stdout 2>&1 
+        /docker/bin/raw2ometiff -p --max_workers=$threads "$workdir/zarr" "/out/$2/$dataset/${filename%.*}.ome.tiff" $RAW2TIFF_ARGS >$stdout 2>&1 || exit
         /docker/log.sh INFO "converted to ome.tiff" 
     fi
     #zip and archive (medusa?siren? wherever rsync goes now.)
@@ -112,6 +110,7 @@ main(){
 
     #these files are huge, cannot afford to keep them kicking around
     /docker/log.sh INFO "cleaning workdir"
+    rm -f $originalImg
     rm -rf $workdir
 }
 

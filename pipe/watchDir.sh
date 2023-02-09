@@ -3,14 +3,6 @@
 # ex. watchDir brain ; will watch /in/brain for files then pass "brain" to processImage for the correct pipeline 
 /docker/log.sh INFO "WATCHING DIRECTORIES"
 
-# queue existing files that will be missed by watchfs 
-regex=$(echo '.*\.tif$|.*\.tiff$|.*\.svs$|.*\.jpg$|.*\.vsi$' | sed 's/|/\\|/g')
-find /in/$1 -iregex $regex | while read file
-do
-	/docker/log.sh INFO "$file was found in watch directory on startup, adding to queue..."
-	[[ ! -z $file ]] && echo $file $1 > /dev/tcp/localhost/$IN_PORT 
-done
-
 # start watch
 inotifywait -mr /in/$1 -e close_write |
 	while read dir action file; do
