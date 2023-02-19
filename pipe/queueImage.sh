@@ -1,6 +1,11 @@
-#!/bin/bash 
-# Sends image process request to queue
-for ((i=0; i<10000; i++))
-do
-  printf "x%02d\n" "$i"
-done > /dev/tcp/127.0.0.1/$IN_PORT
+#!/bin/bash
+# adds image to redis queue
+/docker/log.sh INFO "Added to Queue: $1"
+
+# if input is already queued, ignore it. 
+[[ ! -z $(redis-cli lrange queue 0 -1 | grep \'$1\'; exit 0) ]] && continue
+
+# if priority import, prepend, else, append
+[[ "${a##*/}" =~ "PRIORITY_" ]] &&
+    redis-cli lpush queue "$1 $2" 1> /dev/null 2>& 1 ||
+    redis-cli rpush queue "$1 $2" 1> /dev/null 2>& 1

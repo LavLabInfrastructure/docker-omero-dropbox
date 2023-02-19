@@ -5,7 +5,7 @@ ENV SCRIPT_METRICS=/docker/prometheus.sh
 ENV SERVER_PORT=19090
 LABEL prometheus-scrape.enabled=true
 LABEL prometheus-scrape.job_name=docker-omero-dropbox
-LABEL prometheus-scrape.port=${SERVER_PORT}
+LABEL prometheus-scrape.port=${SERVER_PORT:-19090}
 
 #install runtime libraries
 RUN apt-get update \
@@ -15,12 +15,8 @@ RUN apt-get update \
     zip \
     curl \
     unzip \
-    ssmtp \
     socat \
-    netcat \
-    dos2unix \
-    net-tools \
-    mailutils \
+    redis \
     libblosc1 \
     inotify-tools && \
     rm -rf /var/lib/apt/lists/*
@@ -42,7 +38,7 @@ COPY --from=exporter prometheus-bash-exporter /docker/
 COPY pipe/* /docker/
 COPY configs /configs
 
-RUN rm -rf /tmp
+RUN rm -rf /tmp && mkdir /tmp
 
 # bash pipeline constructor
 ENTRYPOINT [ "/docker/entrypoint.sh" ]

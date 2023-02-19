@@ -295,7 +295,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "maximum_threads"
+              "options": "maximum_jobs"
             },
             "properties": [
               {
@@ -396,7 +396,7 @@
               "type": "string"
             },
             {
-              "selector": "maximum_threads",
+              "selector": "maximum_jobs",
               "text": "Max Threads",
               "type": "string"
             },

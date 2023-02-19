@@ -1,18 +1,23 @@
 #!/bin/bash
 # Formats current pipeline status to JSON 
-# JSON written for use in Grafana w/ JSON API Data Source by Marcus Olsson
-
 static=$(cat $GRAFANA_STATIC)
 
-IFS= read processing << EOF
-$( (cat /tmp/PROCESSING/*/json | jq -cs '') 2> /dev/null)
-EOF
-[[ -z $processing ]] && processing="[]"
+json="$(redis-cli lrange running 0 -1 2> /dev/null)"
+processing="[$(echo -n $json | tr ' ' ',')]"
+[[ $processing =~ "null" ]] && processing="[]"
 
-IFS= read queue << EOF
-$(jq --slurp -Rcs 'split("\n")|map(split(" ")|.[0]?)' $QUEUE_FILE 2> /dev/null)
-EOF
-[[ -z $queue ]] && queue="[]"
+arr=()
+while read line
+do
+    arr+=(${line%\ *})
+done <<< "$(redis-cli lrange queue 0 -1)"
+queue=$(jq -rcn '$ARGS.positional' --args -- "${arr[@]}")
+# json="$(redis-cli lrange queue 0 -1 2> /dev/null)"
+# echo $json
+# queue="$(echo $json | jq -rcn '')"
+# [[ $queue == "null" ]] && queue="[]"
+# echo $processing
+echo $queue
 # form complete json data
 JSON_STRING=$(jq -n \
                   --argjson pipeline_static_configs "$static" \
