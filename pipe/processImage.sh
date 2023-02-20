@@ -87,20 +87,28 @@ main(){
 
     #convert to zarr
     if [[ $CONVERT_TO_ZARR == true ]]; then
+        output=/out/$2/$dataset/${filename%.*}/
         /docker/log.sh INFO "$filename is converting to zarr"
-        /docker/bin/bioformats2raw -p --max_workers=$threads "$currentImg" "/out/$2/$dataset/${filename%.*}/" $BF2RAW_ARGS >$stdout 2>&1 
+        /docker/bin/bioformats2raw -p --max_workers=$threads "$currentImg" "$output" $BF2RAW_ARGS >$stdout 2>&1 
         /docker/log.sh INFO "$filename was converted to zarr"
     fi 
 
     #convert to ome.tiff
     if [[ $CONVERT_TO_TIFF == true ]]; then 
+        output=/out/$2/$dataset/${filename%.*}.ome.tiff
         /docker/log.sh INFO "$filename is converting to ome.tiff"
         mkdir -p "/out/$2/$dataset" 
         /docker/bin/bioformats2raw -p --max_workers=$threads "$currentImg" "$workdir/zarr" $BF2RAW_ARGS >$stdout 2>&1 || exit
         /docker/log.sh INFO "$filename was converted to zarr"
 
-        /docker/bin/raw2ometiff -p --max_workers=$threads "$workdir/zarr" "/out/$2/$dataset/${filename%.*}.ome.tiff" $RAW2TIFF_ARGS >$stdout 2>&1 || exit
+        /docker/bin/raw2ometiff -p --max_workers=$threads "$workdir/zarr" "$output" $RAW2TIFF_ARGS >$stdout 2>&1 || exit
         /docker/log.sh INFO "$filename was converted to ome.tiff" 
+        # # if it was previously an ome tiff, keep metadata
+        # echo $currentImg
+        # if [[ $currentImg =~ \.ome\.tiff$ ]]; then
+        #     echo "here"
+        #     /docker/tiffcomment $currentImg | /docker/tiffcomment -set -- $output
+        # fi
     fi
 
     # finished succesfully!
