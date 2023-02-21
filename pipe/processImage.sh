@@ -73,7 +73,7 @@ main(){
 
 
     # start processing
-    /docker/log.sh INFO "PROCESSING $filename"
+    /docker/log.sh INFO "PROCESSING $1"
     trap cleanup EXIT SIGINT SIGTERM
 
     #mv to dif directory (to avoid multiple calls on same file) 
@@ -89,7 +89,7 @@ main(){
     if [[ $CONVERT_TO_ZARR == true ]]; then
         output=/out/$2/$dataset/${filename%.*}/
         /docker/log.sh INFO "$filename is converting to zarr"
-        /docker/bin/bioformats2raw -p --max_workers=$threads "$currentImg" "$output" $BF2RAW_ARGS >$stdout 2>&1 
+        /docker/bin/bioformats2raw -p --memo-directory "$workdir" --max_workers=$threads "$currentImg" "$output" $BF2RAW_ARGS >$stdout 2>&1 
         /docker/log.sh INFO "$filename was converted to zarr"
     fi 
 
@@ -98,7 +98,7 @@ main(){
         output=/out/$2/$dataset/${filename%.*}.ome.tiff
         /docker/log.sh INFO "$filename is converting to ome.tiff"
         mkdir -p "/out/$2/$dataset" 
-        /docker/bin/bioformats2raw -p --max_workers=$threads "$currentImg" "$workdir/zarr" $BF2RAW_ARGS >$stdout 2>&1 || exit
+        /docker/bin/bioformats2raw -p --memo-directory "$workdir" --max_workers=$threads "$currentImg" "$workdir/zarr" $BF2RAW_ARGS >$stdout 2>&1 || exit
         /docker/log.sh INFO "$filename was converted to zarr"
 
         /docker/bin/raw2ometiff -p --max_workers=$threads "$workdir/zarr" "$output" $RAW2TIFF_ARGS >$stdout 2>&1 || exit
