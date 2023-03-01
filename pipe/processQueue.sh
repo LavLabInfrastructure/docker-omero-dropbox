@@ -22,6 +22,13 @@ do
     args=$(redis-cli blpop queue 0 | tail -n1 2> /dev/null)
     [[ -z $args ]] && /docker/log.sh WARN "Redis failed! Likely means the server is trying to shutdown, continuing" && exit 1
     IFS=' ' read a b <<< $args
+    
+    # if image is already running, wait for it to finish
+    [[ ! -z $(redis-cli lrange running 0 -1 | grep ${a##*/}; exit 0) ]] && 
+        /docker/log.sh WARN "Image with same name is already running! Sent $a to the back of the queue." && 
+        redis-cli rpush queue "$a $b" 1> /dev/null 2>& 1 &&
+        sleep 5 &&
+        continue
 
     # # start a job
     job=$(redis-cli rpush running {"name":$a} 2> /dev/null)
