@@ -36,6 +36,8 @@ initGrafana(){
 echo "Starting..."
 
 # trap propegate SIGINT SIGTERM EXIT
+# start fresh redis instance
+rm -rf /dump.rdb
 redis-server > /dev/null &
 
 # source and export environment
