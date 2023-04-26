@@ -1,11 +1,15 @@
 BRAIN:
-    input_path: /in/BRAIN
-    output_path: /out/BRAIN
+    input_path: ./in/BRAIN
+    output_path: ./out/BRAIN
 PROSTATE:
-    input_path: /in/PROSTATE
-    output_path: /out/PROSTATE
+    input_path: ./in/PROSTATE
+    output_path: ./out/PROSTATE
 global:
     max_jobs: 4
     enable_grafana: true
     enable_prometheus: true
     file_format: tiff
+    bf2raw_args: ["--series 0"]
+    raw2tiff_args: ["--rgb","--compression JPEG","--quality 100"]
+    bf2raw: ~/builds/bioformats2raw-0.6.1/bin/bioformats2raw
+    raw2tiff: ~/builds/raw2ometiff-0.4.1/bin/raw2ometiff

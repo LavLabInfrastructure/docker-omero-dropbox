@@ -63,9 +63,9 @@ class OmeroDropbox(FileSystemEventHandler):
         }
 
         # containerized versions will require moving config files to docker volume
-        if os.path.isfile("/configs/grafana") and os.path.isfile("/etc/grafana/provisioning "):
-            copytree("/configs/grafana", "/etc/grafana/provisioning")
-            
+        if os.path.isfile("/config/grafana") and os.path.isfile("/etc/grafana/provisioning "):
+            copytree("/config/grafana", "/etc/grafana/provisioning")
+
         global_conf = yaml.pop("global")
 
         # find glencoe softwares
@@ -203,10 +203,10 @@ class OmeroDropbox(FileSystemEventHandler):
             return
         logging.debug(f"Glencoe Software's bioformats2raw found at {self.BF2RAW}")
         if self.RAW2TIFF is None:
-            logging.info("Finding GlencoeSoftware's bioformats2raw")
+            logging.info("Finding GlencoeSoftware's raw2ometiff")
             self.RAW2TIFF = os.environ.get("RAW2TIFF_PATH")
         if self.RAW2TIFF is None:
-            self.RAW2TIFF = which('bioformats2raw')
+            self.RAW2TIFF = which('raw2ometiff')
         if self.RAW2TIFF is None:
             if os.environ.get("NO_GS_TIFF") is True:
                 logging.error("Could not find GlencoeSoftware Raw2OmeTiff! Not closing because envar NO_GS_TIFF is enabled!")

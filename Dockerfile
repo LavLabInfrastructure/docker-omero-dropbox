@@ -34,7 +34,7 @@ RUN cd / && curl -L -o bf2raw.zip https://github.com/glencoesoftware/bioformats2
 
 COPY LavLabOmeroDropbox.py /docker/
 COPY requirements.txt /tmp/
-COPY configs /configs
+COPY configs /config
 
 RUN python3 -m pip install -r /tmp/requirements.txt
 
@@ -42,4 +42,4 @@ RUN rm -rf /tmp && mkdir /tmp
 
 ENV BF2RAW_PATH=/docker/bin/bioformats2raw
 ENV RAW2TIFF_PATH=/docker/bin/raw2ometiff
-CMD [ "/docker/LavLabOmeroDropbox.py" ,"/configs/dropbox.yml" ]
+CMD [ "/docker/LavLabOmeroDropbox.py" ,"/config/dropbox.yml" ]
