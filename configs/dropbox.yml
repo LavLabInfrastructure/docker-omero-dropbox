@@ -1,0 +1,11 @@
+BRAIN:
+    input_path: /in/BRAIN
+    output_path: /out/BRAIN
+PROSTATE:
+    input_path: /in/PROSTATE
+    output_path: /out/PROSTATE
+global:
+    max_jobs: 4
+    enable_grafana: true
+    enable_prometheus: true
+    file_format: tiff

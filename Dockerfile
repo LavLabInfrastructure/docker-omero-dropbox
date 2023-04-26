@@ -1,8 +1,5 @@
-FROM ghcr.io/lhns/prometheus-bash-exporter:6fa8c9ed as exporter
 FROM eclipse-temurin:11
 ARG DEBIAN_FRONTEND=noninteractive
-ENV SCRIPT_METRICS=/docker/prometheus.sh
-ENV SERVER_PORT=19090
 LABEL prometheus-scrape.enabled=true
 LABEL prometheus-scrape.job_name=docker-omero-dropbox
 LABEL prometheus-scrape.port=${SERVER_PORT:-19090}
@@ -17,8 +14,9 @@ RUN apt-get update \
     unzip \
     socat \
     redis \
-    libblosc1 \
-    inotify-tools && \
+    python3 \
+    python3-pip \
+    libblosc1 && \
     rm -rf /var/lib/apt/lists/*
 
 # dumb init for process management
@@ -34,11 +32,14 @@ RUN cd / && curl -L -o bf2raw.zip https://github.com/glencoesoftware/bioformats2
     cp -r /tmp/raw2ometiff*/* /docker && \
     cp -r /tmp/bioformats2raw*/* /docker
 
-COPY --from=exporter prometheus-bash-exporter /docker/
-COPY pipe/* /docker/
+COPY LavLabOmeroDropbox.py /docker/
+COPY requirements.txt /tmp/
 COPY configs /configs
+
+RUN python3 -m pip install -r /tmp/requirements.txt
 
 RUN rm -rf /tmp && mkdir /tmp
 
-# bash pipeline constructor
-ENTRYPOINT [ "/docker/entrypoint.sh" ]
+ENV BF2RAW_PATH=/docker/bin/bioformats2raw
+ENV RAW2TIFF_PATH=/docker/bin/raw2ometiff
+CMD [ "/docker/LavLabOmeroDropbox.py" ,"/configs/dropbox.yml" ]

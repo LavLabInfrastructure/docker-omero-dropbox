@@ -1,0 +1,35 @@
+ENVIRONMENTAL VARIABLES
+$BF2RAW_PATH="path/to/bioformats2raw"
+$RAW2TIFF_PATH="path/to/raw2ometiff"
+$NO_GS_TIFF=bool (will allow the use of dropbox without finding a glencoe raw2ometiff converter)
+YAML CONFIGURATION GUIDE
+global:
+    max_jobs: int 
+        Maximum number of images to convert at once.
+    enable_grafana: bool (true)
+        Start Grafana endpoint?
+    enable_prometheus: bool (true)
+        Start Prometheus endpoint?
+    bf2raw: str/path
+        Manual declaration of bioformats2raw command, if not provided will check BF2RAW_PATH envar then PATH
+    raw2tiff: str/path
+        Manual declaration of raw2ometiff command, if not provided will check RAW2TIFF_PATH envar then PATH
+    local_param: any
+        Define default settings for dropboxes in global. 
+        ex. file_format:ome.tiff will make all dropboxes convert to ome.tiff unless overridden locally
+local:
+    input_path: str/path MANDATORY
+    output_path: str/path MANDATORY
+        Project directory in/out path, direct child directories are interpreted as datasets, further child directories are ignored, but images in lower directories are still imported.
+        ex. $input_path/dataset/ignored/incomingImg.tiff -> $output_path/dataset/incomingImg.ome.tiff
+    orphaned_name: str ("orphaned")
+        name of default dataset to use when image is directly imported into project directory
+        ex. $input_path/incomingImg.tiff -> $output_path/$orphaned_name/incomingImg...
+    file_format: zarr|ome.tiff (zarr)
+        Desired file output type. Currently only supports ome.tiff and zarr. 
+        While default is zarr, it is highly recommended to use ome.tiff for OMERO applications
+    bf2raw_args: arr[str] (read below)
+    raw2tiff_args: arr[str] (read below)
+        All conversions use '-p' flag to track progress of conversions and all zarr conversions use '--memo-directory' already.
+        There is no way to override these as behavior is dependent on these args, adding these to your args will likely create strange behavior.
+        Run bioformats2raw/raw2ometiff -h for available args.
